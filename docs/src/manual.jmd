@@ -197,7 +197,7 @@ replace!(Q10tbl[!,:LineDescription],
             "Empl. Contr. Pension/Insurance",
          "Employer contributions for government social insurance" =>
             "Empl. Contr. Social Insurance")
-first(Q10tbl, 6)
+Q10tbl
 ```
 
 ```@example Pipeline
