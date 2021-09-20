@@ -142,7 +142,7 @@ One to interpolate high frequency data from low frequency without a pattern seri
 
 - Check the API section for the `denton_interpolation` method signature.
 
-- You can also check the test suite which for the unit tests covering `denton_interpolation`.
+- You can also check the [test suite](https://github.com/Nosferican/Procedure-for-Completing-Common-Task-Exercise/blob/main/test/runtests.jl).
 
 ## Pull NIPA table 2.1 from the BEA API for annual values
 

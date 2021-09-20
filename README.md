@@ -8,6 +8,14 @@
 |:-----------------:|
 | José Bayoán Santiago Calderón, PhD ([Nosferican](https://github.com/Nosferican)) [![ORCID logo][orcidi]][orcidu] |
 
+Check out the documentation for the exercise step-by-step.
+
+The **Manual** section has the pipeline.
+
+The **API** section shows the method signatures and link to the code for custom functions.
+
+Check the outputs under the `data` and `figs` directories.
+
 <!-- CI -->
 
 [bsi]: https://github.com/Nosferican/Procedure-for-Completing-Common-Task-Exercise/workflows/CI/badge.svg

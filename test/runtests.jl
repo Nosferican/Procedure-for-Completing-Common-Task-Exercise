@@ -13,14 +13,17 @@ using Weave: weave
 end
 
 @testset "denton_interpolation" begin
+    # Read the data
     Section2All_xls = readxlsx(joinpath(dirname(pathof(CommonTaskExercise)),
                                         "..", "data", "Section2All_xls.xlsx"))
     a = read_xlsx_sheet(Section2All_xls, "T20100-A")
     q = read_xlsx_sheet(Section2All_xls, "T20100-Q")
     m = read_xlsx_sheet(Section2All_xls, "T20600-M")
+    # Tidy the data
     atest = stack(select(a, Not(1:2)), Cols(r"^\d{4}$"), variable_name = :year)
     qtest = stack(select(q, Not(1:2)), Cols(r"^\d{4}Q\d"), variable_name = :Period)
     mtest = stack(select(m, Not(1:2)), Cols(r"^\d{4}M\d{2}"), variable_name = :Period)
+    # Clean up the data
     transform!(atest,
                :year => ByRow(x -> parse(Int, x)),
                renamecols = false)
@@ -31,6 +34,7 @@ end
                :Period => ByRow(x -> parse(Int, SubString(x, 1, 4))) => :year,
                :Period => ByRow(x -> (parse(Int, SubString(x, 6, 7)) + 2) ÷ 3) => :quarter,
                :Period => ByRow(x -> parse(Int, SubString(x, 6, 7))) => :month)
+    # Interpolate quarterly data based the annual data
     q_a = combine(groupby(qtest, :PublishCd)) do subdf
         a_subdf = subset(atest, :PublishCd => ByRow(isequal(subdf[1, :PublishCd])))
         q_subdf = subset(subdf, :year => ByRow(∈(unique(a_subdf[!,:year]))))
@@ -41,6 +45,7 @@ end
         q_subdf[!,:interpolation] = vec(interpolation')
         q_subdf
     end
+    # Interpolate monthly data based the annual data
     m_a = combine(groupby(mtest, :PublishCd)) do subdf
         a_subdf = subset(atest, :PublishCd => ByRow(isequal(subdf[1, :PublishCd])))
         m_subdf = subset(subdf, :year => ByRow(∈(unique(a_subdf[!,:year]))))
@@ -51,6 +56,7 @@ end
         m_subdf[!,:interpolation] = vec(interpolation')
         m_subdf
     end
+    # Interpolate monthly data based the quarterly data
     m_q = combine(groupby(mtest, :PublishCd)) do subdf
         q_subdf = innerjoin(select(qtest, [:PublishCd, :year, :quarter, :value]),
                             unique!(select(subdf, [:year, :quarter, :PublishCd])),
@@ -66,6 +72,7 @@ end
         m_subdf[!,:interpolation] = vec(interpolation')
         m_subdf
     end
+    # Compute the aggregated version of the interpolation
     qaval = combine(groupby(q_a, [:PublishCd, :year]),
                    :interpolation => sum,
                    renamecols = false)
@@ -75,12 +82,14 @@ end
     mqval = combine(groupby(m_q, [:PublishCd, :year, :quarter]),
                     :interpolation => sum,
                     renamecols = false)
+    # Compute difference (additive restriction)
     qa_val = innerjoin(qaval, atest, on = [:PublishCd, :year])
     transform!(qa_val, [:interpolation, :value] => ByRow(-) => :Δ)
     ma_val = innerjoin(maval, atest, on = [:PublishCd, :year])
     transform!(ma_val, [:interpolation, :value] => ByRow(-) => :Δ)
     mq_val = innerjoin(mqval, qtest, on = [:PublishCd, :year, :quarter])
     transform!(mq_val, [:interpolation, :value] => ByRow(-) => :Δ)
+    # Verify that the interpolation is valid (very close to the lowfreq vals)
     @test maximum(qa_val[!,:Δ]) < 1e-6
     @test maximum(ma_val[!,:Δ]) < 1e-6
     @test maximum(mq_val[!,:Δ]) < 1e-6
