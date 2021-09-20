@@ -82,17 +82,13 @@ end
     mqval = combine(groupby(m_q, [:PublishCd, :year, :quarter]),
                     :interpolation => sum,
                     renamecols = false)
-    # Compute difference (additive restriction)
+    # Verify additive restriction ∋ interpolation very close to the lowfreq values
     qa_val = innerjoin(qaval, atest, on = [:PublishCd, :year])
-    transform!(qa_val, [:interpolation, :value] => ByRow(-) => :Δ)
+    @test qa_val[!,:interpolation] ≈ qa_val[!,:value]
     ma_val = innerjoin(maval, atest, on = [:PublishCd, :year])
-    transform!(ma_val, [:interpolation, :value] => ByRow(-) => :Δ)
+    @test ma_val[!,:interpolation] ≈ ma_val[!,:value]
     mq_val = innerjoin(mqval, qtest, on = [:PublishCd, :year, :quarter])
-    transform!(mq_val, [:interpolation, :value] => ByRow(-) => :Δ)
-    # Verify that the interpolation is valid (very close to the lowfreq vals)
-    @test maximum(qa_val[!,:Δ]) < 1e-6
-    @test maximum(ma_val[!,:Δ]) < 1e-6
-    @test maximum(mq_val[!,:Δ]) < 1e-6
+    @test mq_val[!,:interpolation] ≈ mq_val[!,:value]
 end
 
 DocMeta.setdocmeta!(CommonTaskExercise,
