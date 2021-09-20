@@ -21,7 +21,7 @@
 <!-- Documentation -->
 
 [ddi]: https://img.shields.io/badge/docs-dev-blue?style=plastic
-[ddu]: https://Nosferican.github.io/Econometrics.jl/dev/
+[ddu]: https://Nosferican.github.io/Procedure-for-Completing-Common-Task-Exercise/dev/
 
 <!-- Maintainers -->
 
